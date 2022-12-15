@@ -1,0 +1,78 @@
+#cloud-config
+timezone: Europe/Berlin
+package_update: true
+package_upgrade: true
+packages:
+  %{~ if enable_terraria ~}
+  - unzip
+  %{~ endif ~}
+  %{~ if enable_valheim ~}
+  - lib32gcc1
+  %{~ endif ~}
+mounts:
+  - [${mount_device}, /mnt/${mount_name}, ${mount_format}, "discard,nofail,defaults", "0", "0"]
+
+write_files:
+  - path: /mnt/${mount_name}/terraria_serverconfig.txt
+    owner: root:root
+    permissions: 0666
+    defer: true
+    content: |
+      world=/mnt/${mount_name}/terraria/worlds/${terraria_world_name}.wld
+      worldpath=/mnt/${mount_name}/terraria/worlds/
+      autocreate=${terraria_world_size}
+      worldname=${terraria_world_name}
+      difficulty=1
+      port=${terraria_port}
+      password=${terraria_password}
+      worldrollbackstokeep=1
+      secure=1
+      language=${terraria_language}
+      upnp=1
+
+  - path: /mnt/${mount_name}/adminlist.txt
+    owner: root:root
+    permissions: 0666
+    defer: true
+    content: |
+      ${admin_id}
+  
+  - path: /mnt/${mount_name}/valheim_start_server.sh
+    owner: root:root
+    permissions: 0777
+    defer: true
+    content: |
+      #!/bin/bash
+      export templdpath=$LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH=/root/valheim/linux64:$LD_LIBRARY_PATH
+      export SteamAppId=892970
+
+      echo "Starting server PRESS CTRL-C to exit"
+
+      /root/valheim/valheim_server.x86_64 -name ${valheim_server_name} -port ${valheim_port} -world ${valheim_world_name} -password ${valheim_password} -nographics -batchmode -public ${valheim_public} -savedir "/mnt/${mount_name}/valheim" &
+
+      export LD_LIBRARY_PATH=$templdpath
+
+runcmd:
+  # Firewall Rules to connect with ssh
+  - ufw --force enable
+  - ufw allow 22/tcp
+
+  # add terraria to vm 
+  %{~ if enable_terraria ~}
+  - ufw allow ${terraria_port}/tcp
+  - wget https://terraria.org/api/download/pc-dedicated-server/terraria-server-${terraria_version}.zip -P /root/terraria/
+  - unzip /root/terraria/terraria-server* -d /root/terraria
+  - chmod +x /root/terraria/${terraria_version}/Linux/TerrariaServer.bin.x86*
+  - tmux new-session -d -s terraria /root/terraria/${terraria_version}/Linux/TerrariaServer.bin.x86_64 -config /mnt/${mount_name}/terraria_serverconfig.txt -ip ${ip_address}
+  %{~ endif ~}
+
+  # add valheim to vm
+  %{~ if enable_valheim ~}
+  - ufw allow 2456/udp && ufw allow 2457/udp && ufw allow 2458/udp && ufw allow 27060/udp
+  - wget "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" -P /root
+  - tar zxvf /root/steamcmd_linux.tar.gz -C /root
+  - /root/steamcmd.sh +@sSteamCmdForcePlatformType linux +force_install_dir /root/valheim +login anonymous +app_update 896660 validate +quit
+  - tmux new-session -d -s valheim
+  - tmux send-keys -t valheim /mnt/${mount_name}/valheim_start_server.sh C-m
+  %{~ endif ~}
