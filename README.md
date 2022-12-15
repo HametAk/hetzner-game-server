@@ -4,6 +4,13 @@ Hello everyone,
 I decided to start a project to create dedicated servers for a few games I play on a single host on Hetzner.
 This code is all written by me.
 
+This project is able to deploy:
+- Valheim
+- Terraria
+
+Future updates will include:
+- Minecraft
+- ...
 ## Requirements
 - Terraform
 This shouldn't be said but since this is created in Terraform it is necessary to install it on your PC.
