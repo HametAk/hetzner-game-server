@@ -22,7 +22,7 @@ write_files:
       worldpath=/mnt/${mount_name}/terraria/worlds/
       autocreate=${terraria_world_size}
       worldname=${terraria_world_name}
-      difficulty=1
+      difficulty=${terraria_difficulty}
       port=${terraria_port}
       password=${terraria_password}
       worldrollbackstokeep=1
@@ -73,6 +73,7 @@ runcmd:
   - wget "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" -P /root
   - tar zxvf /root/steamcmd_linux.tar.gz -C /root
   - /root/steamcmd.sh +@sSteamCmdForcePlatformType linux +force_install_dir /root/valheim +login anonymous +app_update 896660 validate +quit
+  - mv /mnt/${mount_name}/adminlist.txt /mnt/${mount_name}/valheim/adminlist.txt
   - tmux new-session -d -s valheim
   - tmux send-keys -t valheim /mnt/${mount_name}/valheim_start_server.sh C-m
   %{~ endif ~}
