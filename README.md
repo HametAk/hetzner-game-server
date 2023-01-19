@@ -48,3 +48,9 @@ Since this is Infrastructure as Code you can delete the VM if you don't play any
 ```sh
 terraform destroy -auto-approve -var-file=../shared.tfvars
 ```
+
+## Disclaimer 
+
+This project is not affiliated with the games listed above or any of its employees, therefore it do not reflect the views of said parties
+
+and do not endorse or sponsor this project.
