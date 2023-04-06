@@ -12,11 +12,10 @@ Future updates will include:
 - Minecraft
 - ...
 ## Requirements
-- Terraform
-This shouldn't be said but since this is created in Terraform it is necessary to install it on your PC.
+- [Terraform](https://www.terraform.io)
 
 - API Token
-To use this project, it is necessary to have an full verified hetzner account and an api key with read & write privileges.
+To use this project, it is necessary to have a full verified hetzner account and an api key with read & write privileges.
 Refer to the Hetzner Documentation how to generate this token: https://docs.hetzner.com/cloud/api/getting-started/generating-api-token/
 
 - SSH Key
