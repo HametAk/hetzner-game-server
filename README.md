@@ -13,16 +13,14 @@ Future updates will include:
 - V Rising
 - ...
 ## Requirements
-- Terraform
-This shouldn't be said but since this is created in Terraform it is necessary to install it on your PC.
+- [Terraform](https://www.terraform.io)
 
-- API Token
-To use this project, it is necessary to have an full verified hetzner account and an api key with read & write privileges.
-Refer to the Hetzner Documentation how to generate this token: https://docs.hetzner.com/cloud/api/getting-started/generating-api-token/
+- [Hetzner API Token](https://docs.hetzner.com/cloud/api/getting-started/generating-api-token/) \
+To use this project, it is necessary to have a full verified hetzner account and an api key with read & write privileges
 
-- SSH Key
-It is also required to provide a SSH Key for the VM to connect to it if needed.
-Follow the steps on https://community.hetzner.com/tutorials/howto-ssh-key to produce your ssh key or use an existing one.
+## Optional
+- [SSH Key](https://community.hetzner.com/tutorials/howto-ssh-key) \
+If you want to connect to the VM, you should provide a ssh key.
 
 ## How it works
 This project was built on two things: VM and Storage
@@ -52,6 +50,4 @@ terraform destroy -auto-approve -var-file=../shared.tfvars
 
 ## Disclaimer 
 
-This project is not affiliated with the games listed above or any of its employees, therefore it do not reflect the views of said parties
-
-and do not endorse or sponsor this project.
+This project is not affiliated with the games listed above or any of its employees, therefore it do not reflect the views of said parties and do not endorse or sponsor this project.
