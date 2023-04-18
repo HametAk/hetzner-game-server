@@ -7,9 +7,10 @@ This code is all written by me.
 This project is able to deploy:
 - Valheim
 - Terraria
+- Minecraft with Mods
 
 Future updates will include:
-- Minecraft
+- V Rising
 - ...
 ## Requirements
 - Terraform

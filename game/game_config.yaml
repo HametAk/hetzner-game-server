@@ -9,6 +9,9 @@ packages:
   %{~ if enable_valheim ~}
   - lib32gcc1
   %{~ endif ~}
+  %{~ if enable_minecraft ~}
+  - openjdk-17-jdk
+  %{~ endif ~}
 mounts:
   - [${mount_device}, /mnt/${mount_name}, ${mount_format}, "discard,nofail,defaults", "0", "0"]
 
@@ -39,7 +42,7 @@ write_files:
   
   - path: /mnt/${mount_name}/valheim_start_server.sh
     owner: root:root
-    permissions: 0777
+    permissions: 0666
     defer: true
     content: |
       #!/bin/bash
@@ -52,6 +55,69 @@ write_files:
       /root/valheim/valheim_server.x86_64 -name ${valheim_server_name} -port ${valheim_port} -world ${valheim_world_name} -password ${valheim_password} -nographics -batchmode -public ${valheim_public} -savedir "/mnt/${mount_name}/valheim" &
 
       export LD_LIBRARY_PATH=$templdpath
+
+  - path: /mnt/${mount_name}/server.properties
+    owner: root:root
+    permissions: 0777
+    defer: true
+    content: |
+      allow_flight=${minecraft_allow_flight}
+      allow_nether=${minecraft_allow_nether}
+      broadcast-console-to-ops=${minecraft_broadcast-console-to-ops}
+      broadcast-rcon-to-ops=${minecraft_broadcast-rcon-to-ops}
+      difficulty=${minecraft_difficulty}
+      enable-command-block=${minecraft_enable-command-block}
+      enable-jmx-monitoring=${minecraft_enable-jmx-monitoring}
+      enable-rcon=${minecraft_enable-rcon}
+      enable-status=${minecraft_enable-status}
+      enable-query=${minecraft_enable-query}
+      enforce-secure-profile=${minecraft_enforce-secure-profile}
+      enforce-whitelist=${minecraft_enforce-whitelist}
+      entity-broadcast-range-percentage=${minecraft_entity-broadcast-range-percentage}
+      force-gamemode=${minecraft_force-gamemode}
+      function-permission-level=${minecraft_function-permission-level}
+      gamemode=${minecraft_gamemode}
+      generate-structures=${minecraft_generate-structures}
+      generator-settings=${minecraft_generator-settings}
+      hardcore=${minecraft_hardcore}
+      hide-online-players=${minecraft_hide-online-players}
+      initial-disabled-packs=${minecraft_initial-disabled-packs}
+      initial-enabled-packs=${minecraft_initial-enabled-packs}
+      level-name=/mnt/${mount_name}/${minecraft_level-name}
+      level-seed=${minecraft_level-seed}
+      level-type=${minecraft_level-type}
+      max-chained-neighbor-updates=${minecraft_max-chained-neighbor-updates}
+      max-players=${minecraft_max-players}
+      max-tick-time=${minecraft_max-tick-time}
+      max-world-size=${minecraft_max-world-size}
+      motd=${minecraft_motd}
+      network-compression-threshold=${minecraft_network-compression-threshold}
+      online-mode=${minecraft_online-mode}
+      op-permission-level=${minecraft_op-permission-level}
+      player-idle-timeout=${minecraft_player-idle-timeout}
+      prevent-proxy-connections=${minecraft_prevent-proxy-connections}
+      previews-chat=${minecraft_previews-chat}
+      pvp=${minecraft_pvp}
+      query-port=${minecraft_query-port}
+      rate-limit=${minecraft_rate-limit}
+      rcon-password=${minecraft_rcon-password}
+      rcon-port=${minecraft_rcon-port}
+      resource-pack=${minecraft_resource-pack}
+      resource-pack-prompt=${minecraft_resource-pack-prompt}
+      resource-pack-sha1=${minecraft_resource-pack-sha1}
+      require-resource-pack=${minecraft_require-resource-pack}
+      server-ip=${minecraft_server-ip} 
+      server-port=${minecraft_server-port}
+      simulation-distance=${minecraft_simulation-distance}
+      snooper_enabled=${minecraft_snooper_enabled}
+      spawn-animals=${minecraft_spawn-animals}
+      spawn-monsters=${minecraft_spawn-monsters}
+      spawn-npcs=${minecraft_spawn-npcs}
+      spawn-protection=${minecraft_spawn-protection}
+      sync-chunk-writes=${minecraft_sync-chunk-writes}
+      use-native-transport=${minecraft_use-native-transport}
+      view-distance=${minecraft_view-distance}
+      white-list=${minecraft_white-list}
 
 runcmd:
   # Firewall Rules to connect with ssh
@@ -76,4 +142,23 @@ runcmd:
   - mv /mnt/${mount_name}/adminlist.txt /mnt/${mount_name}/valheim/adminlist.txt
   - tmux new-session -d -s valheim
   - tmux send-keys -t valheim /mnt/${mount_name}/valheim_start_server.sh C-m
+  %{~ endif ~}
+
+  # add minecraft to vm
+  %{~ if enable_minecraft ~}
+  - ufw allow 25565/tcp
+  - mkdir /root/minecraft
+  - wget "https://maven.minecraftforge.net/net/minecraftforge/forge/1.19.2-43.2.0/forge-1.19.2-43.2.0-installer.jar" -P /root/minecraft
+  - cd /root/minecraft
+  - mv forge-1.19.2-43.2.0-installer.jar server.jar
+  - java -jar server.jar --installServer
+  - ./run.sh nogui
+  %{~ for mod in minecraft_mods ~}
+  - wget ${mod} -P /root/minecraft/mods/
+  %{~ endfor ~}
+  - echo -e "\n-Xms${minecraft_ram}G" >> user_jvm_args.txt
+  - echo -e "\n-Xmx${minecraft_ram}G" >> user_jvm_args.txt
+  - sed -i 's/eula=false/eula=true/g' eula.txt
+  - cp /mnt/${mount_name}/server.properties .
+  - tmux new-session -d -s minecraft ./run.sh nogui
   %{~ endif ~}
